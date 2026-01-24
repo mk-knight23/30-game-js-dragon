@@ -2,32 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  background-color: #0f172a;
-  color: #ffffff;
+@layer base {
+  :root {
+    --color-bg-primary: #0f172a;
+    --color-bg-secondary: #1e293b;
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-accent: #fbbf24;
+  }
+
+  .light {
+    --color-bg-primary: #f8fafc;
+    --color-bg-secondary: #e2e8f0;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #64748b;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-jurassic-dark text-jurassic-light transition-colors duration-300;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .light body {
+    @apply bg-jurassic-light text-slate-900;
+  }
 }
 
-body {
-  @apply antialiased overflow-hidden select-none bg-jurassic-sky;
-  margin: 0;
-  height: 100vh;
+@layer components {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl;
+  }
+
+  .light .glass-panel {
+    @apply bg-slate-900/5 border-slate-200/50;
+  }
+
+  .btn-jurassic {
+    @apply px-8 py-4 rounded-xl font-bold uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 border-2;
+  }
+
+  .btn-primary {
+    @apply btn-jurassic border-jurassic-glow text-jurassic-glow hover:bg-jurassic-glow hover:text-black shadow-lg shadow-jurassic-glow/20;
+  }
+
+  .btn-secondary {
+    @apply btn-jurassic border-white/20 text-white hover:bg-white hover:text-black;
+  }
 }
 
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl;
+@layer utilities {
+  .text-glow-amber {
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+  }
+
+  .text-glow-green {
+    text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+  }
+
+  .text-glow-red {
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  }
 }
 
-.btn-jurassic {
-  @apply px-8 py-4 rounded-xl font-game text-[10px] uppercase transition-all active:scale-95 disabled:opacity-50 border-2;
+.font-game {
+  font-family: 'Press Start 2P', cursive;
 }
 
-.text-glow-amber {
-  text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24;
+canvas {
+  image-rendering: pixelated;
 }
 
-/* Parallax Layers */
 .parallax-layer {
   @apply absolute inset-0 pointer-events-none;
   background-repeat: repeat-x;
   background-position: bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

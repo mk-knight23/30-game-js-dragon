@@ -1,213 +1,382 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useGameStore } from './stores/game'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useGameStore } from '@/stores/game'
+import { useSettingsStore } from '@/stores/settings'
+import { useKeyboardControls } from '@/composables/useKeyboardControls'
+import { useAudio } from '@/composables/useAudio'
 import { 
-  Play, 
   Trophy, 
   Zap,
   Activity,
   Github,
-  ChevronUp
+  ChevronUp,
+  Moon,
+  Sun,
+  Settings,
+  HelpCircle,
 } from 'lucide-vue-next'
+import SettingsPanel from '@/components/ui/SettingsPanel.vue'
 
-const store = useGameStore()
+const gameStore = useGameStore()
+const settingsStore = useSettingsStore()
+useKeyboardControls()
+const audio = useAudio()
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null
 
 const player = ref({ y: 0, velocity: 0, width: 60, height: 60 })
-const obstacles = ref<any[]>([])
+const obstacles = ref<Array<{ x: number; width: number; height: number }>>([])
 const parallaxOffsets = ref([0, 0, 0, 0])
 
-let animationId: any = null
+let animationId: number | null = null
+let isJumping = false
+
+const isMobile = ref(false)
+const showSettings = ref(false)
+const showHelp = ref(false)
+
+const backgroundClass = computed(() => {
+  if (gameStore.isGameOver) return 'bg-red-950/20'
+  if (gameStore.isPaused) return 'bg-amber-950/20'
+  return 'bg-jurassic-sky'
+})
+
+const themeIcon = computed(() => {
+  const theme = settingsStore.settings.theme
+  if (theme === 'dark') return Moon
+  if (theme === 'light') return Sun
+  return Sun
+})
 
 onMounted(() => {
+  isMobile.value = window.innerWidth < 768
+  settingsStore.initializeTheme()
+  audio.initializeSounds()
+  
   if (canvasRef.value) {
     ctx = canvasRef.value.getContext('2d')
     draw()
   }
-  window.addEventListener('keydown', handleInput)
+  
+  window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth < 768
+  })
 })
 
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleInput)
-  cancelAnimationFrame(animationId)
-})
-
-function handleInput(e: KeyboardEvent) {
-  if (e.code === 'Space' || e.code === 'ArrowUp') {
-    jump()
+watch(() => gameStore.status, (newStatus) => {
+  if (newStatus === 'playing') {
+    startGame()
+  } else {
+    stopGame()
   }
-}
+})
 
-function jump() {
-  if (store.status !== 'playing' || player.value.y > 0) return
+function jump(): void {
+  if (gameStore.status !== 'playing' || isJumping) return
+  isJumping = true
   player.value.velocity = 15
+  audio.playJump()
 }
 
-function startGame() {
-  store.startGame()
+function startGame(): void {
+  audio.playStart()
+  gameStore.startGame()
   obstacles.value = []
   player.value.y = 0
+  player.value.velocity = 0
+  isJumping = false
   gameLoop()
 }
 
-function gameLoop() {
-  if (store.status !== 'playing') return
+function stopGame(): void {
+  if (animationId) {
+    cancelAnimationFrame(animationId)
+    animationId = null
+  }
+}
 
-  // Physics
+function gameLoop(): void {
+  if (gameStore.status !== 'playing') return
+
   player.value.y += player.value.velocity
-  player.value.velocity -= 0.8 // Gravity
+  player.value.velocity -= 0.8
+
   if (player.value.y <= 0) {
     player.value.y = 0
     player.value.velocity = 0
+    isJumping = false
   }
 
-  // Parallax logic
-  parallaxOffsets.value = parallaxOffsets.value.map((o, i) => (o - store.speed * (i + 1) * 0.2) % 800)
+  parallaxOffsets.value = parallaxOffsets.value.map((o, i) => 
+    (o - gameStore.speed * (i + 1) * 0.2) % 800
+  )
 
-  // Obstacle logic
-  if (Math.random() < 0.02) {
-    obstacles.value.push({ x: 800, width: 40, height: 40 })
+  if (Math.random() < 0.02 + (gameStore.level * 0.002)) {
+    const height = 30 + Math.random() * 40
+    obstacles.value.push({ 
+      x: 800, 
+      width: 30 + Math.random() * 30, 
+      height: height 
+    })
   }
 
   obstacles.value.forEach((obs) => {
-    obs.x -= store.speed
-    // Collision check
+    obs.x -= gameStore.speed
+    
     if (obs.x < 100 + player.value.width && obs.x + obs.width > 100 && 
         player.value.y < obs.height) {
-      store.gameOver()
+      audio.playCrash()
+      gameStore.loseLife()
+      obstacles.value = obstacles.value.filter(o => o !== obs)
+      
+      if (gameStore.lives <= 0) {
+        audio.playGameOver()
+        stopGame()
+        return
+      }
     }
   })
 
   obstacles.value = obstacles.value.filter(o => o.x > -100)
   
-  store.incrementScore(1)
-  store.speed += 0.001
+  gameStore.incrementScore(1)
 
   draw()
   animationId = requestAnimationFrame(gameLoop)
 }
 
-function draw() {
+function draw(): void {
   if (!ctx || !canvasRef.value) return
-  ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
+  const canvas = canvasRef.value
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  // Draw Ground
+  const groundY = 350
+
   ctx.fillStyle = '#1e293b'
-  ctx.fillRect(0, 350, 800, 50)
+  ctx.fillRect(0, groundY, canvas.width, 50)
 
-  // Draw Player (Neon Green)
+  if (settingsStore.settings.showParticles) {
+    parallaxOffsets.value.forEach((offset, i) => {
+      ctx!.fillStyle = `rgba(255, 255, 255, ${0.05 - (i * 0.01)})`
+      for (let x = offset; x < canvas.width; x += 100 * (i + 1)) {
+        ctx!.fillRect(x, groundY - 20 - (i * 30), 2, 50 * (i + 1))
+      }
+    })
+  }
+
   ctx.shadowBlur = 20
   ctx.shadowColor = '#39ff14'
   ctx.fillStyle = '#39ff14'
-  ctx.fillRect(100, 350 - player.value.y - player.value.height, player.value.width, player.value.height)
+  ctx.fillRect(100, groundY - player.value.y - player.value.height, player.value.width, player.value.height)
+  ctx.shadowBlur = 0
 
-  // Draw Obstacles (Volcano Red)
   ctx.shadowColor = '#ef4444'
   ctx.fillStyle = '#ef4444'
   obstacles.value.forEach(obs => {
-    ctx!.fillRect(obs.x, 350 - obs.height, obs.width, obs.height)
+    ctx!.fillRect(obs.x, groundY - obs.height, obs.width, obs.height)
   })
+  ctx.shadowBlur = 0
 }
+
+function toggleTheme(): void {
+  const themes: Array<'dark' | 'light' | 'system'> = ['dark', 'light', 'system']
+  const currentIndex = themes.indexOf(settingsStore.settings.theme)
+  const nextIndex = (currentIndex + 1) % themes.length
+  settingsStore.setTheme(themes[nextIndex])
+}
+
+;(globalThis as any).handleJump = jump
 </script>
 
 <template>
-  <div class="h-screen w-screen flex flex-col bg-jurassic-sky overflow-hidden font-sans">
-    
-    <!-- Parallax Background Layer -->
+  <div 
+    class="h-screen w-screen flex flex-col overflow-hidden font-sans transition-colors duration-500"
+    :class="backgroundClass"
+    role="application"
+    aria-label="Dragon Surge Game"
+  >
     <div class="absolute inset-0 z-0">
-       <div v-for="(offset, i) in parallaxOffsets" :key="i"
-            class="parallax-layer opacity-20"
-            :style="{ 
-              backgroundPositionX: offset + 'px', 
-              backgroundImage: 'linear-gradient(90deg, transparent 95%, rgba(255,255,255,0.1) 95%)',
-              backgroundSize: (100 * (i + 1)) + 'px 100%' 
-            }">
-       </div>
+      <div v-for="(offset, i) in parallaxOffsets" :key="i"
+           class="parallax-layer opacity-20"
+           :style="{ 
+             backgroundPositionX: offset + 'px', 
+             backgroundImage: 'linear-gradient(90deg, transparent 95%, rgba(255,255,255,0.1) 95%)',
+             backgroundSize: (100 * (i + 1)) + 'px 100%' 
+           }">
+      </div>
     </div>
 
-    <!-- Top Navigation -->
-    <nav class="h-24 border-b border-white/5 px-10 flex items-center justify-between relative z-10 bg-black/20 backdrop-blur-md">
-       <div class="flex items-center space-x-3 text-white">
-          <div class="bg-amber-500 p-2 rounded-xl rotate-3 shadow-lg shadow-amber-500/20">
-             <Zap class="text-black" :size="24" fill="currentColor" />
-          </div>
-          <h1 class="text-2xl font-display font-black tracking-tighter uppercase italic">Dragon<span class="text-amber-500">Surge</span></h1>
-       </div>
+    <nav class="h-20 lg:h-24 border-b border-white/5 px-6 lg:px-10 flex items-center justify-between relative z-10 bg-black/20 backdrop-blur-md">
+      <div class="flex items-center space-x-3 text-white">
+        <div class="bg-jurassic-glow p-2 rounded-xl rotate-3 shadow-lg shadow-jurassic-glow/20">
+          <Zap class="text-black" :size="20" lg:size="24" fill="currentColor" />
+        </div>
+        <h1 class="text-xl lg:text-2xl font-display font-black tracking-tighter uppercase italic">
+          Dragon<span class="text-jurassic-glow">Surge</span>
+        </h1>
+      </div>
 
-       <div class="flex items-center space-x-6 text-white">
-          <div class="glass-panel px-6 py-2.5 flex items-center space-x-4">
-             <Trophy :size="16" class="text-amber-500" />
-             <span class="text-xs font-black tracking-widest uppercase">Apex: {{ store.highScore }}</span>
+      <div class="flex items-center space-x-4 lg:space-x-6 text-white">
+        <div class="hidden lg:flex items-center space-x-4">
+          <div v-for="i in 3" :key="i"
+               class="w-2 h-2 rounded-full transition-colors"
+               :class="i <= gameStore.lives ? 'bg-jurassic-glow' : 'bg-white/20'">
           </div>
-          <a href="https://github.com/mk-knight23/33-Dragon-Game-JS" target="_blank" class="p-3 rounded-2xl hover:bg-white/5 transition-all text-slate-400 hover:text-white">
-             <Github :size="20" />
-          </a>
-       </div>
+        </div>
+        
+        <div class="glass-panel px-4 lg:px-6 py-2 lg:py-2.5 flex items-center space-x-3 lg:space-x-4">
+          <Trophy :size="14" lg:size="16" class="text-amber-500" />
+          <span class="text-[10px] lg:text-xs font-black tracking-widest uppercase">Apex: {{ gameStore.highScore }}m</span>
+        </div>
+
+        <div class="flex gap-1 lg:gap-2">
+          <button 
+            @click="toggleTheme"
+            class="p-2 lg:p-3 rounded-xl hover:bg-white/5 transition-colors"
+            :aria-label="`Toggle theme. Current: ${settingsStore.settings.theme}`"
+          >
+            <component :is="themeIcon" :size="16" lg:size="20" class="text-white" />
+          </button>
+          
+          <button 
+            @click="showSettings = true"
+            class="p-2 lg:p-3 rounded-xl hover:bg-white/5 transition-colors"
+            aria-label="Open settings"
+          >
+            <Settings :size="16" lg:size="20" class="text-white" />
+          </button>
+          
+          <button 
+            @click="showHelp = true"
+            class="p-2 lg:p-3 rounded-xl hover:bg-white/5 transition-colors"
+            aria-label="Open help"
+          >
+            <HelpCircle :size="16" lg:size="20" class="text-white" />
+          </button>
+        </div>
+
+        <a href="https://github.com/mk-knight23/33-Dragon-Game-JS" target="_blank" 
+           class="p-2 lg:p-3 rounded-xl hover:bg-white/5 transition-all text-slate-400 hover:text-white hidden lg:block">
+          <Github :size="20" />
+        </a>
+      </div>
     </nav>
 
-    <main class="flex-1 flex flex-col items-center justify-center p-8 relative z-10">
-       
-       <div class="relative glass-panel p-4 border-2 border-white/10 shadow-[0_0_100px_rgba(251,191,36,0.05)]">
-          <canvas ref="canvasRef" width="800" height="400" class="bg-black/40 rounded-2xl"></canvas>
-          
-          <!-- HUD Overlays -->
-          <div v-if="store.status === 'idle'" class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl space-y-8">
-             <div class="text-center space-y-2">
-                <h2 class="text-4xl font-display font-black uppercase text-white tracking-tighter leading-none italic">Initiate <br/> Sequence</h2>
-                <p class="text-[10px] font-black uppercase text-slate-500 tracking-[0.3em]">Neural Link Stable</p>
-             </div>
-             <button @click="startGame" class="btn-jurassic border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black pointer-events-auto">
-                Execute Run
-             </button>
+    <main class="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 relative z-10">
+      <div class="relative glass-panel p-3 lg:p-4 border-2 border-white/10 shadow-[0_0_100px_rgba(251,191,36,0.05)]">
+        <canvas 
+          ref="canvasRef" 
+          width="800" 
+          height="400" 
+          class="bg-black/40 rounded-xl w-full max-w-[800px] h-auto"
+          role="img"
+          aria-label="Dragon game canvas"
+        ></canvas>
+        
+        <div v-if="gameStore.isIdle" 
+             class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl space-y-6 lg:space-y-8">
+          <div class="text-center space-y-2">
+            <h2 class="text-3xl lg:text-4xl font-display font-black uppercase text-white tracking-tighter leading-none italic">
+              Initiate <br/> Sequence
+            </h2>
+            <p class="text-[10px] lg:text-xs font-black uppercase text-slate-500 tracking-[0.2em] lg:tracking-[0.3em]">
+              Neural Link Stable
+            </p>
           </div>
-
-          <div v-if="store.status === 'gameover'" class="absolute inset-0 flex flex-col items-center justify-center bg-red-950/60 backdrop-blur-md rounded-2xl space-y-8">
-             <div class="text-center space-y-2">
-                <h2 class="text-5xl font-display font-black text-red-500 tracking-tighter italic uppercase leading-none">Fractured</h2>
-                <p class="text-xs font-black uppercase text-white tracking-widest">Final Data Chunk: {{ store.score }}</p>
-             </div>
-             <button @click="startGame" class="btn-jurassic border-white text-white hover:bg-white hover:text-black pointer-events-auto">
-                Reset Matrix
-             </button>
-          </div>
-
-          <!-- Score HUD -->
-          <div v-if="store.status === 'playing'" class="absolute top-8 left-8 p-4 bg-black/50 backdrop-blur-md rounded-xl border border-white/5 flex flex-col">
-             <span class="text-[8px] font-black uppercase text-slate-500 tracking-widest">Signal Depth</span>
-             <span class="text-xl font-mono font-black text-amber-500 tracking-tighter">{{ store.score }}m</span>
-          </div>
-       </div>
-
-       <!-- Mobile Controls Overlay -->
-       <div v-if="store.status === 'playing'" class="mt-12 md:hidden">
-          <button @touchstart="jump" class="w-24 h-24 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center text-white active:bg-amber-500 transition-all pointer-events-auto">
-             <ChevronUp :size="40" />
+          <button 
+            @click="startGame"
+            class="btn-primary pointer-events-auto"
+            autofocus
+          >
+            Execute Run
           </button>
-       </div>
+        </div>
 
+        <div v-if="gameStore.isPaused" 
+             class="absolute inset-0 flex flex-col items-center justify-center bg-amber-950/60 backdrop-blur-md rounded-2xl space-y-6">
+          <div class="text-center space-y-2">
+            <h2 class="text-3xl lg:text-4xl font-display font-black text-amber-500 tracking-tighter italic uppercase leading-none">
+              Paused
+            </h2>
+          </div>
+          <button 
+            @click="gameStore.pauseGame()"
+            class="px-8 py-3 lg:py-4 bg-white text-black rounded-xl font-bold uppercase tracking-widest text-xs lg:text-sm hover:bg-jurassic-glow transition-all"
+          >
+            Resume
+          </button>
+        </div>
+
+        <div v-if="gameStore.isGameOver" 
+             class="absolute inset-0 flex flex-col items-center justify-center bg-red-950/60 backdrop-blur-md rounded-2xl space-y-4 lg:space-y-6">
+          <div class="text-center space-y-2">
+            <h2 class="text-3xl lg:text-5xl font-display font-black text-red-500 tracking-tighter italic uppercase leading-none">
+              Fractured
+            </h2>
+            <p class="text-xs lg:text-sm font-black uppercase text-white tracking-widest">
+              Final Data Chunk: {{ gameStore.score }}m
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3 lg:gap-4">
+            <div class="glass-panel p-3 lg:p-4">
+              <p class="text-[8px] uppercase tracking-widest text-slate-500">Best</p>
+              <p class="text-lg lg:text-xl font-game text-white">{{ gameStore.highScore }}m</p>
+            </div>
+            <div class="glass-panel p-3 lg:p-4">
+              <p class="text-[8px] uppercase tracking-widest text-slate-500">Level</p>
+              <p class="text-lg lg:text-xl font-game text-jurassic-glow">{{ gameStore.level }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 w-full max-w-xs">
+            <button 
+              @click="startGame"
+              class="w-full bg-white text-black py-3 lg:py-4 rounded-xl font-bold uppercase tracking-widest text-xs lg:text-sm hover:bg-jurassic-glow transition-all"
+            >
+              Reset Matrix
+            </button>
+          </div>
+        </div>
+
+        <div v-if="gameStore.isPlaying && settingsStore.settings.showHUD" 
+             class="absolute top-4 lg:top-8 left-4 lg:left-8 p-3 lg:p-4 bg-black/50 backdrop-blur-md rounded-xl border border-white/5 flex flex-col gap-2">
+          <div class="flex items-center gap-2">
+            <Activity :size="14" class="text-jurassic-glow" />
+            <span class="text-[8px] lg:text-[10px] font-black uppercase text-slate-500 tracking-widest">
+              Signal Depth
+            </span>
+          </div>
+          <span class="text-xl lg:text-2xl font-mono font-black text-jurassic-glow tracking-tighter">
+            {{ gameStore.formattedScore }}
+          </span>
+        </div>
+      </div>
+
+      <div v-if="gameStore.isPlaying" class="mt-8 lg:mt-12 md:hidden">
+        <button 
+          @touchstart.prevent="jump"
+          @click="jump"
+          class="w-20 h-20 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center text-white active:bg-jurassic-glow transition-all pointer-events-auto"
+          aria-label="Jump"
+        >
+          <ChevronUp :size="32" />
+        </button>
+      </div>
     </main>
 
-    <!-- Footer Stats -->
-    <footer class="h-20 border-t border-white/5 px-10 flex items-center justify-between text-[8px] font-black uppercase tracking-[0.5em] text-slate-700 italic">
-       <div class="flex items-center space-x-6">
-          <span class="flex items-center gap-2"><Activity :size="10" /> Engine: Reactive-Vue</span>
-          <span class="w-1 h-1 bg-slate-800 rounded-full"></span>
-          <span>Core v2.0-Production</span>
-       </div>
-       <p>© 2026 Primeval Dynamics.</p>
+    <footer class="h-16 lg:h-20 border-t border-white/5 px-6 lg:px-10 flex items-center justify-between text-[8px] lg:text-[10px] font-black uppercase tracking-[0.4em] lg:tracking-[0.5em] text-slate-700 italic">
+      <div class="flex items-center space-x-4 lg:space-x-6">
+        <span class="flex items-center gap-2">
+          <Activity :size="10" lg:size="12" /> Engine: Reactive-Vue
+        </span>
+        <span class="w-1 h-1 bg-slate-800 rounded-full hidden lg:block"></span>
+        <span class="hidden lg:block">Core v2.0-Production</span>
+      </div>
+      <p>© 2026 Primeval Dynamics.</p>
     </footer>
 
+    <SettingsPanel v-model:show="showSettings" v-model:showHelp="showHelp" />
   </div>
 </template>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-.font-game {
-  font-family: 'Press Start 2P', cursive;
-}
-canvas {
-  image-rendering: pixelated;
-}
-</style>

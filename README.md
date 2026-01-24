@@ -1,53 +1,241 @@
-# Dragon Surge - Primeval Runner
+# 🐉 Dragon Surge - Primeval Runner
 
-A professional high-fidelity 2D runner game built with **Vue 3**, **Canvas API**, and **Tailwind CSS**. Features a multi-layered parallax engine, reactive physics, and a "Jurassic Surge" design system.
+<p align="center">
+  <img src="https://img.shields.io/badge/Vue%203-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white" alt="Vue 3">
+  <img src="https://img.shields.io/badge/Canvas-FF6B6B?style=for-the-badge&logo=canvas&logoColor=white" alt="Canvas API">
+  <img src="https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+</p>
 
-## Overview
+<p align="center">
+  A professional high-fidelity 2D runner game built with **Vue 3**, **Canvas API**, and **Tailwind CSS**. Features a multi-layered parallax engine, reactive physics, and a "Jurassic Surge" design system.
+</p>
+
+<p align="center">
+  <a href="https://mk-knight23.github.io/33-Dragon-Game-JS/">🚀 Live Demo</a>
+</p>
+
+![Game Screenshot](https://via.placeholder.com/800x450/0f172a/39ff14?text=Dragon+Surge)
+
+## 🎮 Overview
+
 Dragon Surge replaces the legacy React-based runner with a modern Vue 3 architecture. It prioritizes hardware-accelerated rendering and frame-independent logic for a smooth 60fps experience on any device.
 
-## Features Comparison
+## ✨ Features
 
-| Feature | Legacy (React) | Upgraded (Vue 3 v2.0) |
-| :--- | :--- | :--- |
-| **Engine** | Standard DOM | **Hardware-Accelerated Canvas API** |
-| **Visuals** | Static Background | **6-Layer Dynamic Parallax Engine** |
-| **Physics** | Simple Logic | **Reactive Gravity + Velocity Clamping** |
-| **State** | React Hooks | **Pinia (Enterprise State Management)** |
-| **Scaling** | Fixed | **Responsive Viewport Adaptation** |
-| **Theming** | Standard | **Tailwind CSS + Primeval Aesthetic** |
+### Before → After
 
-## Tech Stack
-- **Framework:** Vue 3.5 (Script Setup)
-- **Build Tool:** Vite 6
-- **State:** Pinia
-- **Styling:** Tailwind CSS (Nature-inspired palette)
-- **Icons:** Lucide Vue
+| Feature | Legacy | Upgraded (v1.0) |
+|---------|--------|-----------------|
+| **Framework** | Basic setup | Vue 3 + Vite |
+| **State** | Simple store | 3 Pinia stores |
+| **Theming** | Single theme | Dark/Light/System |
+| **Accessibility** | None | Full ARIA + Keyboard |
+| **Settings** | None | Full settings panel |
+| **Persistence** | High score only | Settings + Stats |
+| **Audio** | None | Sound effects |
+| **Game Modes** | 1 | 3 difficulty levels |
+| **Statistics** | None | Comprehensive stats |
+| **Linting** | None | ESLint + Prettier |
 
-## Setup & Build Instructions
+## 🛠️ Tech Stack
+
+- **Framework**: Vue 3.5 (Composition API, Script Setup)
+- **Build Tool**: Vite 6
+- **State Management**: Pinia
+- **Styling**: Tailwind CSS (Jurassic palette)
+- **TypeScript**: Full type safety
+- **Icons**: Lucide Vue Next
+- **Audio**: Howler.js
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 20.x or higher
-- npm 10.x or higher
+
+- Node.js 18.x or higher
+- npm 9.x or higher
 
 ### Installation
+
 ```bash
+# Clone the repository
+git clone https://github.com/mk-knight23/33-Dragon-Game-JS.git
+cd 33-Dragon-Game-JS
+
+# Install dependencies
 npm install
-```
 
-### Development
-```bash
+# Start development server
 npm run dev
-```
 
-### Production Build
-```bash
+# Build for production
 npm run build
 ```
 
-## Deployment
-Deployed to GitHub Pages via automated CI/CD workflows. Optimized for high-performance edge distribution.
+## 🎯 How to Play
+
+1. **Start Game**: Press `Space` or click "Execute Run"
+2. **Jump**: Press `↑` or `W` key to jump over obstacles
+3. **Goal**: Run as far as possible to set a new record
+4. **Obstacles**: Avoid the red volcanic rocks
+5. **Lives**: You have 3 lives - don't crash!
+
+## ⌨️ Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Space` | Start Game |
+| `Esc` | Pause Game |
+| `↑` / `W` | Jump |
+| `M` | Toggle Sound |
+| `T` | Toggle Theme |
+
+## 📁 Project Structure
+
+```
+33-Dragon-Game-JS/
+├── src/
+│   ├── assets/           # Static assets
+│   ├── components/
+│   │   └── ui/           # UI components
+│   │       └── SettingsPanel.vue
+│   ├── composables/      # Vue composables
+│   │   ├── useAudio.ts
+│   │   └── useKeyboardControls.ts
+│   ├── stores/           # Pinia stores
+│   │   ├── game.ts
+│   │   ├── settings.ts
+│   │   └── stats.ts
+│   ├── types/            # TypeScript types
+│   ├── utils/            # Utility functions
+│   ├── App.vue           # Main app component
+│   ├── main.ts           # App entry point
+│   └── style.css         # Global styles
+├── index.html
+├── package.json
+├── vite.config.ts
+├── tailwind.config.js
+└── tsconfig.json
+```
+
+## 🏗️ Architecture
+
+### State Management
+
+The app uses three Pinia stores:
+
+1. **Game Store**: Manages game state, player physics, scoring, and game logic
+2. **Settings Store**: Handles user preferences (sound, theme, difficulty)
+3. **Stats Store**: Tracks player statistics and achievements
+
+### Game Engine
+
+The game uses a custom engine with:
+- Canvas-based rendering with hardware acceleration
+- Reactive gravity and velocity clamping
+- Multi-layer parallax background
+- Dynamic difficulty scaling
+
+### Component Structure
+
+- **App.vue**: Main game container with canvas and UI
+- **SettingsPanel.vue**: Settings and statistics modal
+
+## 🎨 Theming
+
+The app supports three theme modes:
+
+- **Dark**: Default Jurassic dark theme
+- **Light**: Light theme for bright environments
+- **System**: Follows system preference
+
+Toggle themes with the theme button or `T` key.
+
+## ♿ Accessibility
+
+This project is built with accessibility in mind:
+
+- Full ARIA labels and roles
+- Keyboard navigation support
+- Screen reader friendly
+- Reduced motion support
+- High contrast mode support
+
+## 📱 Responsive Design
+
+The game is fully responsive:
+
+- **Desktop**: Full keyboard and mouse support
+- **Tablet**: Touch controls and responsive UI
+- **Mobile**: Touch-optimized controls
+
+## 🔧 Configuration
+
+### Game Settings
+
+| Setting | Options | Default |
+|---------|---------|---------|
+| Difficulty | Easy / Normal / Hard | Normal |
+| Sound | On / Off | On |
+| Particles | On / Off | On |
+| HUD | On / Off | On |
+
+### Build Configuration
+
+```bash
+# Development
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint
+npm run lint
+```
+
+## 📦 Deployment
+
+### GitHub Pages
+
+The project is configured for GitHub Pages deployment:
+
+1. Build: `npm run build`
+2. Output: `dist/` folder
+3. Deploy to `gh-pages` branch
+
+### Vercel
+
+Deploy to Vercel with zero configuration:
+
+```bash
+npm i -g vercel
+vercel
+```
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+If you have any questions or need help, please:
+
+- Open an issue on GitHub
+- Check the [Wiki](https://github.com/mk-knight23/33-Dragon-Game-JS/wiki)
 
 ---
 
-**License:** MIT
-**Architect:** mk-knight23
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/mk-knight23">mk-knight23</a>
+</p>
