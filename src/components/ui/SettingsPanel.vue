@@ -323,6 +323,7 @@ function resetStats(): void {
 </template>
 
 <style scoped>
+@reference "../../style.css";
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.3s ease;

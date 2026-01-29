@@ -36,7 +36,16 @@ Dragon Surge replaces the legacy React-based runner with a modern Vue 3 architec
 | **Audio** | None | Sound effects |
 | **Game Modes** | 1 | 3 difficulty levels |
 | **Statistics** | None | Comprehensive stats |
+| **Physics** | Single jump | Double jump |
+| **Visual FX** | None | Trail + Popups + Warnings |
 | **Linting** | None | ESLint + Prettier |
+
+### New Features
+
+- **Double Jump**: Press jump again while airborne for a second boost
+- **Score Popups**: Visual feedback when reaching score milestones
+- **Obstacle Warnings**: Pulsing triangle indicator before obstacles appear
+- **Motion Trail**: Dragon leaves a fading trail during jumps
 
 ## 🛠️ Tech Stack
 
@@ -239,3 +248,16 @@ If you have any questions or need help, please:
 <p align="center">
   Made with ❤️ by <a href="https://github.com/mk-knight23">mk-knight23</a>
 </p>
+
+---
+
+## 📝 Design Notes (V2)
+
+### Intentional Quirk: The Coin Risk-Reward
+I added collectible coins (V2) that appear above obstacles. They're worth 50 points but require jumping toward danger. The quirk: they're placed slightly randomly, sometimes in awkward positions. This creates micro-decisions—"is 50 points worth the risk?" The imperfection of placement makes each coin feel like a discovered opportunity, not a scripted reward.
+
+### Tradeoff: No Invincibility Power-ups
+Coins give score, not abilities. I deliberately didn't add shields or invincibility stars. The tradeoff: score chasing vs. survival. Players must choose between safe play (longer runs, lower score) and risky jumps (coins but danger). This maintains the purity of "one hit = death" while adding strategic depth.
+
+### What I Chose NOT to Build
+No combo system or score multiplier. Coins are flat 50 points. Multipliers would encourage grinding for perfect runs. Flat rewards mean every coin matters equally whether you're on level 1 or level 10. Consistency over escalation.

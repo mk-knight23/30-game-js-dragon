@@ -1,93 +1,81 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --color-bg-primary: #0f172a;
-    --color-bg-secondary: #1e293b;
-    --color-text-primary: #f8fafc;
-    --color-text-secondary: #94a3b8;
-    --color-accent: #fbbf24;
-  }
+@theme {
+  --color-jurassic-leaf: #166534;
+  --color-jurassic-rock: #451a03;
+  --color-jurassic-volcano: #991b1b;
+  --color-jurassic-glow: #fbbf24;
+  --color-jurassic-sky: #0f172a;
+  --color-jurassic-dark: #0a0a0f;
+  --color-jurassic-light: #f8fafc;
 
-  .light {
-    --color-bg-primary: #f8fafc;
-    --color-bg-secondary: #e2e8f0;
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #64748b;
-  }
+  --font-game: "Press Start 2P", system-ui;
+  --font-display: system-ui, sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
-  html {
-    @apply scroll-smooth;
-  }
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
-  body {
-    @apply bg-jurassic-dark text-jurassic-light transition-colors duration-300;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
+:root {
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #0f172a;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-accent: #166534;
+}
 
-  .light body {
-    @apply bg-jurassic-light text-slate-900;
+.light {
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #e2e8f0;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #64748b;
+  --color-accent: #166534;
+}
+
+html {
+  @apply scroll-smooth;
+}
+
+body {
+  @apply bg-jurassic-dark text-jurassic-light antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+@utility glass-panel {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@utility btn-jurassic {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition-property: all;
+  transition-duration: 200ms;
+
+  &:hover {
+    transform: scale(1.05);
   }
 }
 
-@layer components {
-  .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl;
-  }
+@utility btn-jurassic-primary {
+  @apply bg-jurassic-leaf text-white shadow-lg;
 
-  .light .glass-panel {
-    @apply bg-slate-900/5 border-slate-200/50;
-  }
-
-  .btn-jurassic {
-    @apply px-8 py-4 rounded-xl font-bold uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 border-2;
-  }
-
-  .btn-primary {
-    @apply btn-jurassic border-jurassic-glow text-jurassic-glow hover:bg-jurassic-glow hover:text-black shadow-lg shadow-jurassic-glow/20;
-  }
-
-  .btn-secondary {
-    @apply btn-jurassic border-white/20 text-white hover:bg-white hover:text-black;
+  &:hover {
+    background-color: #14532d;
   }
 }
 
-@layer utilities {
-  .text-glow-amber {
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-  }
+@utility btn-jurassic-secondary {
+  @apply bg-jurassic-rock text-white shadow-lg;
 
-  .text-glow-green {
-    text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
-  }
-
-  .text-glow-red {
-    text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-  }
-}
-
-.font-game {
-  font-family: 'Press Start 2P', cursive;
-}
-
-canvas {
-  image-rendering: pixelated;
-}
-
-.parallax-layer {
-  @apply absolute inset-0 pointer-events-none;
-  background-repeat: repeat-x;
-  background-position: bottom;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  &:hover {
+    background-color: #3b1402;
   }
 }

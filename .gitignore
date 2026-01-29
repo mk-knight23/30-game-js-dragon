@@ -29,3 +29,6 @@ npm-debug.log*
 
 # Backup folder
 _backup/
+
+# AI/Agent folders
+.claude/
