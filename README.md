@@ -268,3 +268,20 @@ Coins give score, not abilities. I deliberately didn't add shields or invincibil
 
 ### What I Chose NOT to Build
 No combo system or score multiplier. Coins are flat 50 points. Multipliers would encourage grinding for perfect runs. Flat rewards mean every coin matters equally whether you're on level 1 or level 10. Consistency over escalation.
+
+## 🎉 Additional Features (V3)
+
+Two focused additions that add depth without complexity:
+
+### Shield Power-up
+**Why added**: The original design deliberately avoided invincibility. But for newer players, the one-hit death feels punishing.
+
+**What changed**: Added a rare shield power-up (blue orb) that absorbs one hit. Spawns every ~1000 points, so it's not common. It creates a temporary "safety" feeling that encourages riskier play—exactly the kind of psychological engagement runners need.
+
+### Near-Miss Points
+**Why added**: Skilled players who narrowly avoid obstacles deserved more recognition than just staying alive.
+
+**What changed**: Passing within 10 pixels of an obstacle now awards "Close Call!" text with +5 bonus points. It's subtle but rewards precision. The game already tracks your position, so this was purely a display/score addition.
+
+### Intentionally Rejected: Double Jump Upgrade
+I considered making double jump an unlockable or power-up. Rejected because double jump is core to the game's feel—it should always be available. Making it earnable would make early runs feel unfair. The game is hard enough without gimping the player's primary movement option.
