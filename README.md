@@ -19,8 +19,15 @@ active physics, and a "Jurassic Surge" design system.
 </p>
 
 <p align="center">
-  <a href="https://mk-knight23.github.io/33-Dragon-Game-JS/">🚀 Live Demo</a>
+  <a href="https://30-game-dragon-surge.vercel.app">🚀 Play Now (Vercel)</a>
 </p>
+
+## 🎮 Live Demos
+
+| Platform | URL |
+|----------|-----|
+| **Vercel** | [30-game-dragon-surge.vercel.app](https://30-game-dragon-surge.vercel.app) |
+| **Render** | [three0-game-dragon-surge.onrender.com](https://three0-game-dragon-surge.onrender.com) |
 
 ![Game Screenshot](https://via.placeholder.com/800x450/0f172a/39ff14?text=Dragon+Surge)
 
